@@ -280,7 +280,7 @@ MainWindow::MainWindow(Session *session, QWidget *parent) : QMainWindow(parent),
     typingTracker = new TypingTracker(this);
     memberListModel = new MemberListModel(session->getImageManager(), this);
 
-    channelListMode = (QSettings().value("ui/channelListMode").toString() == "classic")
+    channelListMode = (QSettings().value("ui/channelListMode", "classic").toString() == "classic") // fork: Classic by default
                               ? ChannelListMode::Classic
                               : ChannelListMode::Tree;
 

@@ -98,7 +98,7 @@ AppearancePage::AppearancePage(QWidget *parent)
     auto *channelListCombo = new QComboBox(layoutGroup);
     channelListCombo->addItem(tr("Tree")); // 0
     channelListCombo->addItem(tr("Classic")); // 1
-    channelListCombo->setCurrentIndex(QSettings().value("ui/channelListMode").toString() == "classic" ? 1 : 0);
+    channelListCombo->setCurrentIndex(QSettings().value("ui/channelListMode", "classic").toString() == "classic" ? 1 : 0); // fork
     layoutGroupLayout->addWidget(channelListCombo, 1);
 
     auto *indentCheck = new QCheckBox(tr("Indent nested items"), layoutGroup);
