@@ -46,6 +46,21 @@ static int indentWidth(const ChannelNode *node, ChannelIndent::Scopes scopes)
     return steps * ChannelIndent::StepWidth;
 }
 
+// fork: a caret after the name of rows that expand (an account, Direct Messages, a server)
+static void drawExpandCaret(QPainter *painter, const QStyleOptionViewItem &option, const QRect &textRect,
+                            const QString &shownText, const QColor &color)
+{
+    constexpr int caretSize = 10;
+    const int textWidth = painter->fontMetrics().horizontalAdvance(shownText);
+    const int x = std::min(textRect.left() + textWidth + 6, textRect.right() + 2);
+    const QRect caretRect(x, textRect.center().y() - caretSize / 2 + 1, caretSize, caretSize);
+    const qreal dpr = painter->device() ? painter->device()->devicePixelRatioF() : 1.0;
+    const bool open = option.state & QStyle::State_Open;
+    painter->drawPixmap(caretRect, Core::Theme::Icons::pixmap(open ? Core::Theme::Icons::Name::ChevronDown
+                                                                  : Core::Theme::Icons::Name::ChevronRight,
+                                                             caretSize, color, dpr));
+}
+
 static void drawBranchIndicator(QPainter *painter, const QStyleOptionViewItem &option, bool expanded)
 {
     int indicatorWidth = 20;
@@ -484,6 +499,8 @@ void ChannelDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
         painter->fillRect(contentOpt.rect, option.palette.alternateBase().color());
         painter->setPen(option.palette.brightText().color());
         painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, node->name);
+        if (index.model()->hasChildren(index)) // fork
+            drawExpandCaret(painter, option, textRect, node->name, option.palette.placeholderText().color());
         painter->restore();
         return;
     }
@@ -688,6 +705,9 @@ void ChannelDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
     QString elidedName = painter->fontMetrics().elidedText(
             index.data(Qt::DisplayRole).toString(), Qt::ElideRight, textRect.width());
     painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, elidedName);
+    if ((node->type == ChannelNode::Type::DMHeader || node->type == ChannelNode::Type::Server) &&
+        index.model()->hasChildren(index)) // fork
+        drawExpandCaret(painter, option, textRect, elidedName, option.palette.placeholderText().color());
 
     // unread pill in the left margin; a selected thread hides it while a selected channel keeps it
     if (node->opensChat()) {
