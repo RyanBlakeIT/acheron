@@ -221,7 +221,7 @@ ClientInstance::ClientInstance(const AccountInfo &info,
         messageRequests.clear();
         if (ready.privateChannels.hasValue()) {
             for (const auto &channel : ready.privateChannels.get()) {
-                readStateManager->registerPrivateChannel(channel);
+                readStateManager->registerPrivateChannel(channel, true);
                 if (channel.isMessageRequest.valueOr(false))
                     messageRequests.insert(channel.id.get());
             }
