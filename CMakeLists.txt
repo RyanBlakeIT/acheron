@@ -257,6 +257,7 @@ set(PROJECT_SOURCES
     src/UI/ConnectionBanner.cpp
     src/UI/ChannelTopicLine.cpp
     src/UI/ElidedLabel.cpp
+    src/UI/ListAnimator.cpp
     src/UI/StatusIndicator.cpp
     src/UI/TrayIcon.cpp
     src/UI/ProxyLineEdit.cpp

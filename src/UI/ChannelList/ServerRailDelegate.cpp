@@ -1,6 +1,7 @@
 #include "ServerRailDelegate.hpp"
 
 #include "ServerRailModel.hpp"
+#include "UI/ListAnimator.hpp"
 
 #include <QPainter>
 #include <QPainterPath>
@@ -248,6 +249,13 @@ void ServerRailDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
         }
     } else {
         QPixmap icon = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
+        if (ListAnimator *animator = ListAnimator::forWidget(option.widget); animator && !icon.isNull()) {
+            const QPixmap moving = animator->frame(
+                    index, index.data(ServerRailModel::AnimatedIconUrlRole).toUrl(), iconRect.size(),
+                    Core::Snowflake(index.data(ServerRailModel::AccountIdRole).toULongLong()), iconRect);
+            if (!moving.isNull())
+                icon = moving;
+        }
         if (!icon.isNull())
             drawRoundedPixmap(painter, iconRect, icon, radius);
         else {

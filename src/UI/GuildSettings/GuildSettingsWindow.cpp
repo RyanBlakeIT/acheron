@@ -353,6 +353,7 @@ GuildSettingsPage *GuildSettingsWindow::pageFor(GuildSettingsSection section)
     case GuildSettingsSection::Members: {
         auto *members = new GuildMembersPage(instance, images, guildId, stack);
         connect(members, &GuildMembersPage::linkActivated, this, &GuildSettingsWindow::linkActivated);
+        members->setAnimatedImages(animatedImages);
         page = members;
         break;
     }

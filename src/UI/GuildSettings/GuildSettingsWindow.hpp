@@ -16,6 +16,7 @@ class QStackedWidget;
 
 namespace Acheron {
 namespace Core {
+class AnimatedImageCache;
 class ClientInstance;
 class ImageManager;
 } // namespace Core
@@ -30,6 +31,7 @@ public:
     GuildSettingsWindow(Core::ImageManager *images, Core::ClientInstance *instance, Core::Snowflake guildId, QWidget *parent = nullptr);
 
     void openSection(GuildSettingsSection section);
+    void setAnimatedImages(Core::AnimatedImageCache *cache) { animatedImages = cache; }
 
 signals:
     void linkActivated(const QString &url);
@@ -52,6 +54,7 @@ private:
 
     QPointer<Core::ClientInstance> instance;
     Core::ImageManager *images;
+    Core::AnimatedImageCache *animatedImages = nullptr;
     Core::Snowflake guildId;
 
     QListWidget *navigation;

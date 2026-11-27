@@ -24,6 +24,7 @@
 #include "Chat/GifPlayback.hpp"
 #include "Chat/InlineVideoController.hpp"
 #include "Input/MentionSuggestions.hpp"
+#include "ListAnimator.hpp"
 #include "Forum/ForumBrowser.hpp"
 #include "Forum/ForumPostModel.hpp"
 #include "Forum/NewPostDialog.hpp"
@@ -1006,6 +1007,7 @@ void MainWindow::openGuildSettings(Snowflake accountId, Snowflake guildId, Guild
     QPointer<GuildSettingsWindow> &window = guildSettingsWindows[qMakePair(accountId, guildId)];
     if (!window) {
         window = new GuildSettingsWindow(session->getImageManager(), instance, guildId);
+        window->setAnimatedImages(session->getAnimatedImageCache());
         connect(window, &GuildSettingsWindow::linkActivated, chatView, &ChatView::openLink);
     }
     window->openSection(section);
@@ -1810,6 +1812,10 @@ void MainWindow::setupUi()
     chatView->frameAnimator()->setEmojiEnabled(QSettings().value("chat/animate_emoji", true).toBool());
     chatView->frameAnimator()->setStickersEnabled(QSettings().value("chat/animate_stickers", true).toBool());
     chatView->frameAnimator()->setAvatarAnimation(avatarAnimationSetting());
+    for (QAbstractItemView *list : { static_cast<QAbstractItemView *>(channelTree),
+                                     static_cast<QAbstractItemView *>(serverRail),
+                                     static_cast<QAbstractItemView *>(memberListView) })
+        new ListAnimator(list, animatedImages);
     applyGifSettings(chatView->gifPlayback());
     chatView->setItemDelegate(new ChatDelegate(session->getImageManager(), chatView));
     chatView->setIconSize(QSize(24, 24));
@@ -3330,7 +3336,14 @@ void MainWindow::openSettingsWindow()
                 expressionPicker->setAnimationEnabled(enabled);
         });
         connect(settingsWindow, &SettingsWindow::avatarAnimationChanged, this,
-                [this]() { chatView->frameAnimator()->setAvatarAnimation(avatarAnimationSetting()); });
+                [this]() {
+                    const AvatarAnimation mode = avatarAnimationSetting();
+                    chatView->frameAnimator()->setAvatarAnimation(mode);
+                    for (const QWidget *list : { static_cast<QWidget *>(channelTree), static_cast<QWidget *>(serverRail),
+                                                 static_cast<QWidget *>(memberListView) })
+                        if (ListAnimator *animator = ListAnimator::forWidget(list))
+                            animator->setMode(mode);
+                });
         connect(settingsWindow, &SettingsWindow::animateStickersChanged, this, [this](bool enabled) {
             chatView->frameAnimator()->setStickersEnabled(enabled);
         });

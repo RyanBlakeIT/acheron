@@ -37,6 +37,8 @@ public:
         PresenceBadgeRole,
         HasActivityRole,
         ActivityRole,
+        AnimatedAvatarUrlRole, // empty if the avatar is still (#119)
+        AccountIdRole,
     };
 
     explicit MemberListModel(Core::ImageManager *imageManager, QObject *parent = nullptr);

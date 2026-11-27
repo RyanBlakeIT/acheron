@@ -1046,6 +1046,7 @@ void GuildMembersPage::openProfile(Core::Snowflake userId)
         return;
     auto *popup = new UserProfilePopup(images, instance, userId, guildId, this);
     connect(popup, &UserProfilePopup::linkActivated, this, &GuildMembersPage::linkActivated);
+    popup->setAnimatedImages(animatedImages);
     popup->show();
 }
 

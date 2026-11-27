@@ -20,6 +20,9 @@ class QTreeWidget;
 class QTreeWidgetItem;
 
 namespace Acheron {
+namespace Core {
+class AnimatedImageCache;
+} // namespace Core
 namespace Discord {
 struct GuildMemberAdd;
 } // namespace Discord
@@ -34,6 +37,8 @@ public:
     GuildMembersPage(Core::ClientInstance *instance, Core::ImageManager *images, Core::Snowflake guildId, QWidget *parent = nullptr);
     ~GuildMembersPage() override;
 
+    void setAnimatedImages(Core::AnimatedImageCache *cache) { animatedImages = cache; }
+
 signals:
     void linkActivated(const QString &url);
 
@@ -44,6 +49,7 @@ protected:
     void hideEvent(QHideEvent *event) override;
 
 private:
+    Core::AnimatedImageCache *animatedImages = nullptr;
     [[nodiscard]] bool canSearch() const;
     void search(bool loadMore);
     void runSearch(const Discord::MemberSearchQuery &query, bool loadMore, int attempt);
