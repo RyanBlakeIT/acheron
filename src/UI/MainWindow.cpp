@@ -1,5 +1,6 @@
 #include "MainWindow.hpp"
 #include "../../fork/UpdateChecker.hpp" // fork
+#include "Core/BadDomains.hpp"
 
 #include <QActionGroup>
 #include <QApplication>
@@ -221,6 +222,8 @@ void applyGifSettings(GifPlayback *gifs)
 
 MainWindow::MainWindow(Session *session, QWidget *parent) : QMainWindow(parent), session(session)
 {
+    Core::BadDomains::instance()->fetch(); // to warn about harmful links (#137)
+
     auto *captchaResolver = new BrowserCaptchaResolver(this, this);
     session->setCaptchaResolver(captchaResolver);
     updateChecker = new UpdateChecker(this, [this] { quitFromTray(); }); // fork
