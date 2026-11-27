@@ -22,6 +22,9 @@ const char *const OPUS_SIGNAL_TYPE_KEY = "voice/codec/signal_type";
 const char *const OPUS_FEC_KEY = "voice/codec/fec";
 const char *const OPUS_PACKET_LOSS_KEY = "voice/codec/packet_loss";
 const char *const JOIN_LEAVE_SOUNDS_KEY = "voice/join_leave_sounds";
+const char *const MUTE_HOTKEY_KEY = "voice/hotkeys/mute";
+const char *const DEAFEN_HOTKEY_KEY = "voice/hotkeys/deafen";
+const char *const GLOBAL_HOTKEYS_KEY = "voice/hotkeys/global";
 const char *const USER_VOLUMES_GROUP = "voice/user_volumes";
 const char *const USER_MUTES_GROUP = "voice/user_mutes";
 
@@ -59,6 +62,9 @@ VoiceSettings VoiceSettings::load()
     settings.opusFec = stored.value(OPUS_FEC_KEY, defaults.opusFec).toBool();
     settings.opusPacketLossPercent = stored.value(OPUS_PACKET_LOSS_KEY, defaults.opusPacketLossPercent).toInt();
     settings.joinLeaveSounds = stored.value(JOIN_LEAVE_SOUNDS_KEY, defaults.joinLeaveSounds).toBool();
+    settings.muteHotkey = stored.value(MUTE_HOTKEY_KEY, defaults.muteHotkey).toString();
+    settings.deafenHotkey = stored.value(DEAFEN_HOTKEY_KEY, defaults.deafenHotkey).toString();
+    settings.globalHotkeys = stored.value(GLOBAL_HOTKEYS_KEY, defaults.globalHotkeys).toBool();
     return settings;
 }
 
@@ -79,6 +85,9 @@ void VoiceSettings::saveAndApply() const
     stored.setValue(OPUS_FEC_KEY, opusFec);
     stored.setValue(OPUS_PACKET_LOSS_KEY, opusPacketLossPercent);
     stored.setValue(JOIN_LEAVE_SOUNDS_KEY, joinLeaveSounds);
+    stored.setValue(MUTE_HOTKEY_KEY, muteHotkey);
+    stored.setValue(DEAFEN_HOTKEY_KEY, deafenHotkey);
+    stored.setValue(GLOBAL_HOTKEYS_KEY, globalHotkeys);
     VoiceSettingsNotifier *notifier = VoiceSettingsNotifier::instance();
     emit notifier->changed();
 }

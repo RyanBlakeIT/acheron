@@ -4,6 +4,7 @@
 #include <QHash>
 #include <QObject>
 #include <QSet>
+#include <QString>
 
 #include <opus.h>
 
@@ -29,6 +30,10 @@ struct VoiceSettings
     bool opusFec = true;
     int opusPacketLossPercent = 0;
     bool joinLeaveSounds = true;
+    // in QKeySequence::PortableText; empty turns the hotkey off
+    QString muteHotkey = QStringLiteral("Ctrl+Shift+M");
+    QString deafenHotkey = QStringLiteral("Ctrl+Shift+D");
+    bool globalHotkeys = true; // also while another program has focus
 
     [[nodiscard]] static VoiceSettings load();
     void saveAndApply() const;
