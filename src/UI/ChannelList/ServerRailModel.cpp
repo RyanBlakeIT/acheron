@@ -133,6 +133,12 @@ QVariant ServerRailModel::data(const QModelIndex &index, int role) const
         if (e.kind == Kind::Server && e.srcIndex.isValid())
             return e.srcIndex.data(ChannelTreeModel::OwnerIdRole);
         return {};
+    case AnimatedIconUrlRole:
+        if (e.kind == Kind::Server && e.srcIndex.isValid())
+            return e.srcIndex.data(ChannelTreeModel::AnimatedIconUrlRole);
+        if (e.kind == Kind::AccountHome)
+            return Discord::Cdn::animatedAssetUrl(Discord::Cdn::userAvatar(e.accountId, e.accountAvatarHash, 64));
+        return {};
     case Qt::DecorationRole:
         return decorationFor(e);
     default:

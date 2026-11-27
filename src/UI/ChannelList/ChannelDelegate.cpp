@@ -5,6 +5,7 @@
 #include "ChannelFilterProxyModel.hpp"
 
 #include "Core/Theme/Icons.hpp"
+#include "UI/ListAnimator.hpp"
 #include "UI/LivePill.hpp"
 #include "UI/StatusIndicator.hpp"
 
@@ -497,6 +498,13 @@ void ChannelDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
 
         constexpr qreal avatarRadius = 3.0;
         QPixmap avatar = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
+        if (ListAnimator *animator = ListAnimator::forWidget(option.widget); animator && !avatar.isNull()) {
+            const QPixmap moving = animator->frame(
+                    index, index.data(ChannelTreeModel::AnimatedIconUrlRole).toUrl(), avatarRect.size(),
+                    Core::Snowflake(index.data(ChannelTreeModel::IconAccountIdRole).toULongLong()), avatarRect);
+            if (!moving.isNull())
+                avatar = moving;
+        }
         if (!avatar.isNull()) {
             painter->save();
             QPainterPath clip;
@@ -604,6 +612,13 @@ void ChannelDelegate::paint(QPainter *painter, const QStyleOptionViewItem &optio
                                iconSize, iconSize);
 
         QPixmap icon = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
+        if (ListAnimator *animator = ListAnimator::forWidget(option.widget); animator && !icon.isNull()) {
+            const QPixmap moving = animator->frame(
+                    index, index.data(ChannelTreeModel::AnimatedIconUrlRole).toUrl(), iconRect.size(),
+                    Core::Snowflake(index.data(ChannelTreeModel::IconAccountIdRole).toULongLong()), iconRect);
+            if (!moving.isNull())
+                icon = moving;
+        }
         if (!icon.isNull())
             painter->drawPixmap(iconRect, icon);
 

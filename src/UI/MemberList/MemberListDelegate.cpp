@@ -5,6 +5,7 @@
 
 #include "Core/MemberListManager.hpp"
 #include "Core/Theme/Icons.hpp"
+#include "UI/ListAnimator.hpp"
 #include "UI/StatusIndicator.hpp"
 
 constexpr static int GroupHeight = 22;
@@ -124,15 +125,26 @@ void MemberListDelegate::paintMember(QPainter *painter, const QStyleOptionViewIt
 
     QPixmap avatar = index.data(MemberListModel::AvatarRole).value<QPixmap>();
     QRect avatarRect(x, centerY, AvatarSize, AvatarSize);
+    bool avatarFitted = false; // animation frames are decoded at the drawn size already
+    if (ListAnimator *animator = ListAnimator::forWidget(option.widget); animator && !avatar.isNull()) {
+        const QPixmap moving = animator->frame(
+                index, index.data(MemberListModel::AnimatedAvatarUrlRole).toUrl(), avatarRect.size(),
+                Core::Snowflake(index.data(MemberListModel::AccountIdRole).toULongLong()), avatarRect);
+        if (!moving.isNull()) {
+            avatar = moving;
+            avatarFitted = true;
+        }
+    }
 
     if (!avatar.isNull()) {
         QPainterPath clipPath;
         clipPath.addRoundedRect(avatarRect, AvatarRadius, AvatarRadius);
         painter->save();
         painter->setClipPath(clipPath);
-        painter->drawPixmap(avatarRect, avatar.scaled(AvatarSize, AvatarSize,
-                                                      Qt::KeepAspectRatioByExpanding,
-                                                      Qt::SmoothTransformation));
+        painter->drawPixmap(avatarRect, avatarFitted ? avatar
+                                                     : avatar.scaled(AvatarSize, AvatarSize,
+                                                                     Qt::KeepAspectRatioByExpanding,
+                                                                     Qt::SmoothTransformation));
         painter->restore();
     } else {
         QColor defaultBg = option.palette.mid().color();

@@ -78,6 +78,16 @@ QVariant MemberListModel::data(const QModelIndex &index, int role) const
                                                          AvatarRequestSize.width()),
                            AvatarRequestSize, index);
     }
+    case AnimatedAvatarUrlRole: {
+        if (item->type != Core::MemberListItem::Type::Member)
+            return QVariant();
+        const Discord::Member &member = item->member;
+        return Discord::Cdn::animatedAssetUrl(Discord::Cdn::effectiveAvatar(
+                manager->currentGuildId(), item->userId, member.avatar.valueOr(), member.user->avatar.get(),
+                AvatarRequestSize.width()));
+    }
+    case AccountIdRole:
+        return static_cast<quint64>(accountId);
     case RoleColorRole:
         return item->type == Core::MemberListItem::Type::Member
                        ? QVariant::fromValue(item->roleColor)

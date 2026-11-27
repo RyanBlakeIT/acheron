@@ -141,11 +141,38 @@ int ChannelTreeModel::columnCount(const QModelIndex &) const
     return 1;
 }
 
+namespace {
+// the icon a server row or DM row shows, at 64px
+QUrl rowIconUrl(const ChannelNode *node)
+{
+    constexpr int size = 64;
+    if (node->type == ChannelNode::Type::Server)
+        return Discord::Cdn::guildIcon(node->id, node->TEMP_iconHash, size);
+    if (node->type == ChannelNode::Type::DMChannel) {
+        if (node->dmRecipientId.isValid())
+            return Discord::Cdn::userAvatar(node->dmRecipientId, node->dmAvatarHash, size);
+        if (!node->TEMP_iconHash.isEmpty())
+            return Discord::Cdn::channelIcon(node->id, node->TEMP_iconHash, size);
+    }
+    return {};
+}
+} // namespace
+
 QVariant ChannelTreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return {};
     ChannelNode *node = nodeFromIndex(index);
+
+    if (role == AnimatedIconUrlRole) {
+        if (node->type == ChannelNode::Type::VoiceParticipant)
+            return Discord::Cdn::animatedAssetUrl(node->voiceParticipantAvatarUrl);
+        return Discord::Cdn::animatedAssetUrl(rowIconUrl(node));
+    }
+    if (role == IconAccountIdRole) {
+        ChannelNode *accountNode = getAccountNodeFor(node);
+        return static_cast<quint64>(accountNode ? accountNode->id : Snowflake());
+    }
 
     if (role == Qt::DisplayRole)
         return node->name;
@@ -154,27 +181,11 @@ QVariant ChannelTreeModel::data(const QModelIndex &index, int role) const
         ChannelNode *accountNode = getAccountNodeFor(node);
         const Snowflake avatarAccountId = accountNode ? accountNode->id : Snowflake();
 
-        if (node->type == ChannelNode::Type::Server) {
+        if (node->type == ChannelNode::Type::Server || node->type == ChannelNode::Type::DMChannel) {
             const QSize desiredSize(64, 64);
-            QUrl iconUrl = Discord::Cdn::guildIcon(node->id, node->TEMP_iconHash, desiredSize.width());
-            return avatarTracker.fetch(session->getImageManager(), iconUrl, desiredSize, index,
-                                       avatarAccountId, Core::PinGroup::ChannelList);
-        }
-
-        if (node->type == ChannelNode::Type::DMChannel) {
-            const QSize desiredSize(64, 64);
-            QUrl avatarUrl;
-
-            if (node->dmRecipientId.isValid()) {
-                avatarUrl = Discord::Cdn::userAvatar(node->dmRecipientId, node->dmAvatarHash,
-                                                     desiredSize.width());
-            } else if (!node->TEMP_iconHash.isEmpty()) {
-                avatarUrl = Discord::Cdn::channelIcon(node->id, node->TEMP_iconHash,
-                                                      desiredSize.width());
-            }
-
-            if (!avatarUrl.isEmpty())
-                return avatarTracker.fetch(session->getImageManager(), avatarUrl, desiredSize, index,
+            const QUrl iconUrl = rowIconUrl(node);
+            if (!iconUrl.isEmpty())
+                return avatarTracker.fetch(session->getImageManager(), iconUrl, desiredSize, index,
                                            avatarAccountId, Core::PinGroup::ChannelList);
         }
 

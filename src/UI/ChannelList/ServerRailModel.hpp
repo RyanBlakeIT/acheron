@@ -48,6 +48,7 @@ public:
         FolderColorRole,
         InFolderGroupRole, // true for expanded folder and its child guilds for painting purposes
         OwnerIdRole,
+        AnimatedIconUrlRole, // moving server icon or account avatar, empty if still (#119)
     };
 
     ServerRailModel(Core::Session *session, ChannelTreeModel *source, QObject *parent = nullptr);

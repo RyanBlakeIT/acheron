@@ -51,6 +51,8 @@ public:
         IsVoiceVideoRole = Qt::UserRole + 18,
         IsVoiceLiveRole = Qt::UserRole + 19,
         IsConnectedVoiceChannelRole = Qt::UserRole + 20,
+        AnimatedIconUrlRole = Qt::UserRole + 21, // moving server icon or DM avatar, empty if still (#119)
+        IconAccountIdRole = Qt::UserRole + 22,
     };
 
     QModelIndex index(int row, int column, const QModelIndex &parentIndex) const override;
