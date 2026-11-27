@@ -8,6 +8,11 @@
 #include "UI/LivePill.hpp"
 #include "UI/StatusIndicator.hpp"
 
+#include <QApplication>
+#include <QPainter>
+
+#include <algorithm>
+
 namespace Acheron {
 namespace UI {
 
