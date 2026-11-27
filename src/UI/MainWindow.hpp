@@ -31,6 +31,7 @@ struct TypingStart;
 namespace UI {
 class ChatView;
 class RequestsDialog;
+class MessageSearchPopup;
 class ChatModel;
 class MemberSearch;
 class ForumBrowser;
@@ -192,6 +193,7 @@ private:
     void jumpToMessageLink(Core::Snowflake channelId, Core::Snowflake messageId);
     void setChannelToolbarTargets(Core::Snowflake threadBrowserChannel, Core::Snowflake pinsChannel);
     void openPinnedMessages();
+    void openMessageSearch();
     void openPinnedMessagesOf(Core::Snowflake channelId);
     void onPinsReadStateChanged(Core::Snowflake channelId);
     void ackPinsIfUnread();
@@ -254,12 +256,14 @@ private:
     QWidget *channelToolbar = nullptr;
     QToolButton *threadBrowserButton = nullptr;
     QToolButton *pinsButton = nullptr;
+    QToolButton *searchButton = nullptr;
     QWidget *pinsUnreadDot = nullptr;
     ChannelTopicLine *channelTopicLine = nullptr;
     Core::Snowflake channelTopicChannelId = Core::Snowflake::Invalid;
     ThreadBrowserPopup *threadBrowser = nullptr;
     Core::Snowflake threadBrowserChannelId = Core::Snowflake::Invalid;
     PinnedMessagesPopup *pinnedMessages = nullptr;
+    MessageSearchPopup *messageSearch = nullptr;
     Core::Snowflake pinsChannelId = Core::Snowflake::Invalid;
 
     struct PendingLinkJump
