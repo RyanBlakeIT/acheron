@@ -1018,6 +1018,7 @@ void MainWindow::openGuildSettings(Snowflake accountId, Snowflake guildId, Guild
 void MainWindow::showUserProfile(Core::ClientInstance *instance, Snowflake userId, Snowflake guildId, QWidget *aboveModalPopup)
 {
     auto *popup = new UserProfilePopup(session->getImageManager(), instance, userId, guildId, aboveModalPopup ? aboveModalPopup : this);
+    popup->setAnimatedImages(session->getAnimatedImageCache());
     connect(popup, &UserProfilePopup::linkActivated, chatView, &ChatView::openLink);
     popup->show();
 }
@@ -1808,6 +1809,7 @@ void MainWindow::setupUi()
     chatView->frameAnimator()->setCache(animatedImages);
     chatView->frameAnimator()->setEmojiEnabled(QSettings().value("chat/animate_emoji", true).toBool());
     chatView->frameAnimator()->setStickersEnabled(QSettings().value("chat/animate_stickers", true).toBool());
+    chatView->frameAnimator()->setAvatarAnimation(avatarAnimationSetting());
     applyGifSettings(chatView->gifPlayback());
     chatView->setItemDelegate(new ChatDelegate(session->getImageManager(), chatView));
     chatView->setIconSize(QSize(24, 24));
@@ -3327,6 +3329,8 @@ void MainWindow::openSettingsWindow()
             if (expressionPicker)
                 expressionPicker->setAnimationEnabled(enabled);
         });
+        connect(settingsWindow, &SettingsWindow::avatarAnimationChanged, this,
+                [this]() { chatView->frameAnimator()->setAvatarAnimation(avatarAnimationSetting()); });
         connect(settingsWindow, &SettingsWindow::animateStickersChanged, this, [this](bool enabled) {
             chatView->frameAnimator()->setStickersEnabled(enabled);
         });
