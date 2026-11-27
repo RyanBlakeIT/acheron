@@ -741,6 +741,8 @@ void Client::onGatewayReady(const Ready &data)
 
     me = data.user;
 
+    if (autoIdleSinceMs > 0 && currentStatus() == QLatin1String("online"))
+        sendPresence(); // a new session starts from the saved status; still away
     emit ready(data);
 }
 
@@ -1626,6 +1628,22 @@ QString Client::currentCustomStatus() const
     return {};
 }
 
+void Client::setAutoIdle(bool idle)
+{
+    if (idle == (autoIdleSinceMs > 0))
+        return;
+    autoIdleSinceMs = idle ? QDateTime::currentMSecsSinceEpoch() : 0;
+    // only an Online status turns into Idle; Do Not Disturb, Invisible or Idle picked by hand stay put
+    if (currentStatus() == QLatin1String("online"))
+        sendPresence();
+}
+
+void Client::sendPresence()
+{
+    const bool idle = autoIdleSinceMs > 0 && currentStatus() == QLatin1String("online");
+    gateway->sendPresenceUpdate(idle ? QStringLiteral("idle") : currentStatus(), currentCustomStatus(), idle ? autoIdleSinceMs : 0);
+}
+
 void Client::setStatus(const QString &status)
 {
     if (!settings.status)
@@ -1640,7 +1658,7 @@ void Client::setStatus(const QString &status)
         if (!response.success)
             qCWarning(LogDiscord) << "Failed to save status:" << response.statusCode << response.error;
     });
-    gateway->sendPresenceUpdate(status, currentCustomStatus());
+    sendPresence();
 }
 
 void Client::setCustomStatus(const QString &text)
@@ -1672,7 +1690,7 @@ void Client::setCustomStatus(const QString &text)
         if (!response.success)
             qCWarning(LogDiscord) << "Failed to save custom status:" << response.statusCode << response.error;
     });
-    gateway->sendPresenceUpdate(currentStatus(), trimmed);
+    sendPresence();
 }
 
 void Client::sendCallConnect(Snowflake channelId)

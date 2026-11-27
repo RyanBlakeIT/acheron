@@ -79,6 +79,7 @@
 #include "Core/MemberListManager.hpp"
 #include "Core/Presence/PresenceManager.hpp"
 #include "Core/Session.hpp"
+#include "IdleMonitor.hpp"
 #include "Core/Theme/Manager.hpp"
 #ifndef ACHERON_NO_VOICE
 #include "Core/Audio/VoiceManager.hpp"
@@ -3139,6 +3140,45 @@ void MainWindow::restoreWindowState()
     }
 }
 
+// Show the accounts as Idle after a while away from the computer, like the official client
+void MainWindow::setupAutoIdle()
+{
+    idleMonitor = new IdleMonitor(this);
+    idleTimer = new QTimer(this);
+    connect(idleTimer, &QTimer::timeout, this, &MainWindow::checkAutoIdle);
+    idleTimer->start(AutoIdleCheckMs);
+}
+
+void MainWindow::checkAutoIdle()
+{
+    QSettings settings;
+    const bool enabled = settings.value("presence/auto_idle", true).toBool();
+    const qint64 afterMs = qint64(qBound(1, settings.value("presence/auto_idle_minutes", 10).toInt(), 720)) * 60 * 1000;
+    if (!enabled) {
+        setAutoIdle(false);
+        return;
+    }
+    const QPointer<MainWindow> self(this);
+    idleMonitor->query([self, afterMs](qint64 idleMs) {
+        if (!self)
+            return;
+        bool inCall = false; // talking without touching the keyboard isn't being away
+        for (const auto &instance : self->session->getClients())
+            inCall = inCall || (instance && instance->isInVoice());
+        self->setAutoIdle(idleMs >= afterMs && !inCall);
+    });
+}
+
+void MainWindow::setAutoIdle(bool idle)
+{
+    autoIdle = idle;
+    for (const auto &instance : session->getClients()) // each skips it if nothing changed, and new accounts catch up
+        if (instance)
+            instance->discord()->setAutoIdle(idle);
+    // while away, look again sooner so coming back shows as Online within seconds
+    idleTimer->setInterval(idle ? AutoIdleReturnCheckMs : AutoIdleCheckMs);
+}
+
 void MainWindow::setupMenu()
 {
     auto *menuBar = this->menuBar();
@@ -3172,6 +3212,7 @@ void MainWindow::setupMenu()
         });
     }
     statusMenu->addSeparator();
+    setupAutoIdle();
     QAction *customStatusAction = statusMenu->addAction(tr("Set &Custom Status..."));
     connect(customStatusAction, &QAction::triggered, this, [this]() {
         if (!currentInstance)
